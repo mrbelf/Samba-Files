@@ -9,4 +9,15 @@
 
     <string name="menu_server">Server</string>
     <string name="menu_files">Files</string>
+
+    <string name="server_ip">Server IP</string>
+    <string name="server_username">Server username</string>
+    <string name="server_password">Server password</string>
+    <string name="connect">Connect</string>
+    <string name="Connecting">Attempting connection to server…</string>
+
+    <string name="server_status">Server Status</string>
+    <string name="connected">Connected</string>
+    <string name="connection_failed">Connection Failed</string>
+    <string name="connection_success">Successfully Connected</string>
 </resources>
