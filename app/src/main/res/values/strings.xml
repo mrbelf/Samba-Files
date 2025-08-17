@@ -20,4 +20,8 @@
     <string name="connected">Connected</string>
     <string name="connection_failed">Connection Failed</string>
     <string name="connection_success">Successfully Connected</string>
+
+    <string name="files_placeholder">Select a root folder</string>
+    <string name="files_location">Files will be saved at root: %s</string>
+    <string name="change_root">Change Root</string>
 </resources>
