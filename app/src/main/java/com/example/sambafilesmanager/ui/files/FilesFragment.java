@@ -1,11 +1,14 @@
 package com.example.sambafilesmanager.ui.files;
 
+import static android.content.ContentValues.TAG;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,13 +21,21 @@ import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.sambafilesmanager.R;
 import com.example.sambafilesmanager.databinding.FragmentFilesBinding;
+import com.example.sambafilesmanager.server.SambaServer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class FilesFragment extends Fragment {
     private FragmentFilesBinding binding;
     private TextView topText;
+    private RecyclerView filesRecyclerView;
+    private FilesAdapter adapter;
 
     private static final int REQUEST_CODE_PICK_FOLDER = 1001;
     private ActivityResultLauncher<Intent> folderPickerLauncher;
@@ -39,6 +50,18 @@ public class FilesFragment extends Fragment {
         View root = binding.getRoot();
 
         topText = binding.topText;
+        filesRecyclerView = binding.filesRecyclerView;
+
+        adapter = new FilesAdapter(new ArrayList<>());
+        filesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        filesRecyclerView.setAdapter(adapter);
+        filesViewModel.getFiles().observe(getViewLifecycleOwner(), filenames -> {
+            List<FileItem> items = new ArrayList<>();
+            for (String name : filenames) {
+                items.add(new FileItem(name));
+            }
+            adapter.setFiles(items);
+        });
 
         updateTopText();
 
@@ -47,6 +70,16 @@ public class FilesFragment extends Fragment {
         }
 
         return root;
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+
+        var viewModel = new ViewModelProvider(this).get(FilesViewModel.class);
+        new Thread(() -> {
+            viewModel.loadFiles();
+        }).start();
     }
 
     private void askForPickingFolder(){

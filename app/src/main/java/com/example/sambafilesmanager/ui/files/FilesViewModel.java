@@ -4,15 +4,23 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class FilesViewModel extends ViewModel {
-    private final MutableLiveData<String> mText;
+import com.example.sambafilesmanager.server.SambaServer;
 
-    public FilesViewModel() {
-        mText = new MutableLiveData<>();
-        mText.setValue("This is files fragment");
+import java.util.ArrayList;
+import java.util.List;
+
+public class FilesViewModel extends ViewModel {
+    private final MutableLiveData<List<String>> filesLiveData = new MutableLiveData<>();
+
+    public LiveData<List<String>> getFiles() {
+        return filesLiveData;
     }
 
-    public LiveData<String> getText() {
-        return mText;
+    public void loadFiles() {
+        // Hard coded path for now
+        filesLiveData.postValue(SambaServer.getInstance().listAllFiles("roms"));
+    }
+
+    public FilesViewModel() {
     }
 }

@@ -96,10 +96,16 @@ public class SambaServer {
         List<String> result = new ArrayList<>();
         for(var item : share.list(root)){
             boolean isDir = (item.getFileAttributes() & FileAttributes.FILE_ATTRIBUTE_DIRECTORY.getValue()) != 0;
+            String name = item.getFileName();
+            Log.d(TAG, name);
+            if("..".contains(name)){
+                Log.d(TAG, "Skipping path: " + name);
+                continue;
+            }
             if(isDir){
-                result.addAll(listAllFiles(this.joinPaths(root, item.getFileName())));
+                result.addAll(listAllFiles(this.joinPaths(root, name)));
             } else {
-                result.add(item.getFileName());
+                result.add(name);
             }
         }
         return result;
