@@ -14,7 +14,10 @@
     <string name="server_username">Server username</string>
     <string name="server_password">Server password</string>
     <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+
     <string name="Connecting">Attempting connection to server…</string>
+    <string name="server_sharename">Server sharename</string>
 
     <string name="server_status">Server Status</string>
     <string name="connected">Connected</string>

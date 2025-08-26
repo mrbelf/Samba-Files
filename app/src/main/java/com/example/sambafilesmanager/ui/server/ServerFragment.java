@@ -26,7 +26,9 @@ public class ServerFragment extends Fragment {
     private EditText usernameField;
     private EditText passwordField;
     private Button connectButton;
+    private Button disconnectButton;
     private FrameLayout loadingOverlay;
+    private EditText sharenameField;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -40,19 +42,27 @@ public class ServerFragment extends Fragment {
         usernameField = binding.username;
         passwordField = binding.password;
         connectButton = binding.connect;
+        disconnectButton = binding.disconnect;
         loadingOverlay = binding.loadingOverlay;
+        sharenameField = binding.sharename;
 
         loadingOverlay.setOnTouchListener((v, event) -> true);
         loadingOverlay.bringToFront();
 
         serverViewModel.getIsLoading()
                 .observe(getViewLifecycleOwner(), (Observer<Boolean>) this::setLoading);
+        serverViewModel.getIsConnected().observe(getViewLifecycleOwner(), (Observer<Boolean>) this::setConnected);
 
         connectButton.setOnClickListener((v) -> {
             serverViewModel.attemptConnection(
                     ipField.getText().toString(),
                     usernameField.getText().toString(),
-                    passwordField.getText().toString());
+                    passwordField.getText().toString(),
+                    sharenameField.getText().toString());
+        });
+
+        disconnectButton.setOnClickListener((v) -> {
+            serverViewModel.disconnect();
         });
 
         return root;
@@ -60,8 +70,17 @@ public class ServerFragment extends Fragment {
 
     private void setLoading(boolean loading){
         loadingOverlay.setVisibility(loading ? VISIBLE : GONE);
-
         connectButton.setEnabled(!loading);
+    }
+
+    private void setConnected(boolean connected){
+        connectButton.setVisibility(connected ? GONE : VISIBLE);
+        disconnectButton.setVisibility(connected ? VISIBLE : GONE);
+
+        ipField.setEnabled(!connected);
+        usernameField.setEnabled(!connected);
+        passwordField.setEnabled(!connected);
+        sharenameField.setEnabled(!connected);
     }
 
     @Override
