@@ -1,11 +1,14 @@
 package com.example.sambafilesmanager.server;
 import static android.content.ContentValues.TAG;
 
+import android.content.Context;
+import android.net.Uri;
 import android.util.Log;
+
+import androidx.documentfile.provider.DocumentFile;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.msfscc.FileAttributes;
-import com.hierynomus.msfscc.fileinformation.FileDirectoryQueryableInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.mssmb2.SMB2ShareAccess;
 import com.hierynomus.smbj.SMBClient;
@@ -28,6 +31,8 @@ public class SambaServer {
 
     private Session session = null;
     private DiskShare share = null;
+    private String localRootUri = null;
+    private String remoteRoot = null;
 
 
     private SambaServer(){};
@@ -69,6 +74,10 @@ public class SambaServer {
         return false;
     }
 
+    public void setLocalRootUri(String uri){
+        this.localRootUri = uri;
+    }
+
     public void closeConnection(){
         try {
             share.close();
@@ -88,12 +97,13 @@ public class SambaServer {
         }
     }
 
-    private String joinPaths(String base, String path){
+    public String joinPaths(String base, String path){
         return base + "/" + path;
     }
 
-    public List<String> listAllFiles(String root){
-        List<String> result = new ArrayList<>();
+    public List<ServerFile> listAllFiles(String root){
+        this.remoteRoot = root;
+        List<ServerFile> result = new ArrayList<>();
         for(var item : share.list(root)){
             boolean isDir = (item.getFileAttributes() & FileAttributes.FILE_ATTRIBUTE_DIRECTORY.getValue()) != 0;
             String name = item.getFileName();
@@ -105,14 +115,21 @@ public class SambaServer {
             if(isDir){
                 result.addAll(listAllFiles(this.joinPaths(root, name)));
             } else {
-                result.add(name);
+                result.add(new ServerFile(root, item.getFileName()));
             }
         }
         return result;
     }
 
 
-    public void downloadFile(DiskShare share, String remoteFilePath, java.io.File localFile) {
+    public void downloadFile(String remoteFilePath, Context context) {
+        Uri treeUri = Uri.parse(localRootUri);
+        DocumentFile pickedDir = DocumentFile.fromTreeUri(context, treeUri);
+        var f = (new java.io.File(remoteFilePath.replace(remoteRoot+"/", "")));
+        String localDirPath = f.getPath();
+        String name = f.getName();
+        DocumentFile localFile = pickedDir.createFile(localDirPath, name);
+
         try {
             File remoteFile = share.openFile(
                     remoteFilePath,
@@ -124,7 +141,7 @@ public class SambaServer {
             );
 
             try (InputStream is = remoteFile.getInputStream();
-                 OutputStream os = new FileOutputStream(localFile)) {
+                 OutputStream os = context.getContentResolver().openOutputStream(localFile.getUri())) {
 
                 byte[] buffer = new byte[8192];
                 int bytesRead;
@@ -133,7 +150,7 @@ public class SambaServer {
                 }
             }
 
-            Log.i(TAG,"Download complete: " + localFile.getAbsolutePath());
+            Log.i(TAG,"Download complete: " + localFile.getName());
 
         } catch (Exception e) {
             //e.printStackTrace();

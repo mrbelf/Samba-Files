@@ -27,4 +27,5 @@
     <string name="files_placeholder">Select a root folder</string>
     <string name="files_location">Files will be saved at root: %s</string>
     <string name="change_root">Change Root</string>
+    <string name="download">Download</string>
 </resources>
